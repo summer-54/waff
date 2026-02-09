@@ -1,0 +1,14 @@
+[workspace]
+members = ["daemon", "client", "lib"]
+
+[workspace.dependencies]
+futures = "*"
+uuid = "*"
+clap = { version = "*", features = ["derive"] }
+tokio = { version = "*", features = ["full"] }
+serde = { version = "*", features = ["derive"] }
+serde_json = "*"
+log = "*"
+surf = "*"
+anyhow = "*"
+
