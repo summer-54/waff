@@ -1,5 +1,5 @@
 use tokio::{io::AsyncReadExt, net::UnixListener};
-use crate::defaults::{UNIX_SOCKET_PATH, API_URL};
+use lib::defaults::{UNIX_SOCKET_PATH, API_URL};
 use surf;
 use anyhow::{Result, Context, anyhow};
 
@@ -22,7 +22,7 @@ pub async fn start(token: Option<String>, name: Option<String>, password: Option
         Some(token) => token,
         None => {
             let (Some(name), Some(password)) = (name, password) else {
-                return Err(anyhow!("Can't start tstcli_daemon without specified token or name and password"));
+                return Err(anyhow!("Can't start waff_daemon without specified token or name and password"));
             };
             
             get_token(name, password).await?
@@ -30,7 +30,7 @@ pub async fn start(token: Option<String>, name: Option<String>, password: Option
     };
 
 
-    log::info!("tstcli_daemon started.");
+    log::info!("waff_daemon started.");
     while let Ok((mut stream, _)) = listener.accept().await {
         loop {
             let mut command = String::new();
@@ -46,5 +46,5 @@ pub async fn start(token: Option<String>, name: Option<String>, password: Option
             }
         }
     }
-    Ok("tstcli_daemon stopped.".to_string())
+    Ok("waff_daemon stopped.".to_string())
 }

@@ -647,6 +647,13 @@ dependencies = [
 [[package]]
 name = "daemon"
 version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "lib",
+ "log",
+ "surf",
+ "tokio",
+]
 
 [[package]]
 name = "darling"
