@@ -1,5 +1,5 @@
 use tokio::{io::AsyncReadExt, net::UnixListener};
-use lib::defaults::{UNIX_SOCKET_PATH, API_URL};
+use lib::{command::Command, defaults::{API_URL, UNIX_SOCKET_PATH}};
 use surf;
 use anyhow::{Result, Context, anyhow};
 
@@ -11,7 +11,15 @@ async fn get_token(name: &str, password: &str) -> Result<Box<str>> {
     todo!();
 }
 
-async fn execute_command(_command: &str, _token: &str) -> Result<Box<str>> {
+async fn execute_command(command: &Command, token: &str) -> Result<Box<str>> {
+    match command {
+        Command::Submit { contest, task, code } => {
+
+        },
+        Command::GetInstance { contest } => {
+
+        }
+    }
     todo!();
 }
 
@@ -33,9 +41,10 @@ pub async fn start(token: Option<Box<str>>, name: Option<Box<str>>, password: Op
     log::info!("waff_daemon started.");
     while let Ok((mut stream, _)) = listener.accept().await {
         loop {
-            let mut command = String::new();
-            let len = stream.read_to_string(&mut command).await.context("while trying to read UnixStream")?;
-            log::trace!("Readed message {command} with len {len}");
+            let mut command_string = String::new();
+            let len = stream.read_to_string(&mut command_string).await.context("while trying to read UnixStream")?;
+            log::trace!("Readed message {command_string} with len {len}");
+            let command: Command = serde_json::from_str(&command_string).context("while parsing command")?;
             match execute_command(&command, &token).await {
                 Ok(res) => {
                     log::info!("{res}");

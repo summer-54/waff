@@ -653,6 +653,7 @@ dependencies = [
  "anyhow",
  "lib",
  "log",
+ "serde_json",
  "surf",
  "tokio",
 ]
