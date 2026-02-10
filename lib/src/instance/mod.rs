@@ -1,18 +1,21 @@
+pub mod contest;
+pub mod submission;
 pub mod task;
 pub mod test;
 pub mod test_verdict;
 pub mod verdict;
-pub mod contest;
-pub mod submission;
 
-use serde_json::Value;
 use crate::defaults;
-use tokio::{fs::{read_dir, remove_dir_all, DirBuilder, File}, io::AsyncReadExt};
-use verdict::Verdict;
-use test_verdict::TestVerdict;
-use contest::Contest;
-use task::Task;
 use anyhow::{Context, Result};
+use contest::Contest;
+use serde_json::Value;
+use task::Task;
+use test_verdict::TestVerdict;
+use tokio::{
+    fs::{DirBuilder, File, read_dir, remove_dir_all},
+    io::AsyncReadExt,
+};
+use verdict::Verdict;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Instance {
@@ -21,27 +24,43 @@ pub struct Instance {
 }
 
 impl Instance {
-    pub async fn save_to(self, directory: &String) -> Result<()> {
-        remove_dir_all(format!("{directory}")).await.context("removing save directory")?;
+    pub async fn save_to(self, directory: &str) -> Result<()> {
+        remove_dir_all(directory)
+            .await
+            .context("removing save directory")?;
         let dir_builder = DirBuilder::new();
-        dir_builder.create(format!("{directory}")).await.context("creating save directory")?;
-        self.contest.save_to(&defaults::contest_path(directory)).await?;
-        dir_builder.create(defaults::tasks_path(directory)).await.context("creating task directory")?;
-        let mut tasks = self.tasks.clone();
+        dir_builder
+            .create(directory)
+            .await
+            .context("creating save directory")?;
+        self.contest
+            .save_to(&*defaults::contest_path(directory))
+            .await?;
+        dir_builder
+            .create(&*defaults::tasks_path(directory))
+            .await
+            .context("creating task directory")?;
+        let mut tasks = self.tasks;
         // Sorting by `litera`
         tasks.sort_by(|a, b| a.info.litera.cmp(&b.info.litera));
-        
+
         for task in tasks {
-            let litera = task.info.litera.clone();
-            task.save_to(&defaults::task_path(&defaults::tasks_path(directory), &litera)).await?;
+            let litera = &*task.info.litera;
+            task.save_to(&*defaults::task_path(
+                &*defaults::tasks_path(directory),
+                &*litera,
+            ))
+            .await?;
         }
         Ok(())
     }
 
-    pub async fn get_from_dir(directory: &String) -> Result<Self> {
+    pub async fn get_from_dir(directory: &str) -> Result<Self> {
         let contest = Contest::get_from_save(&defaults::contest_path(directory)).await?;
         let mut tasks = Vec::new();
-        let mut taskfiles = read_dir(defaults::tasks_path(directory)).await.context("reading from task directory")?; 
+        let mut taskfiles = read_dir(&*defaults::tasks_path(directory))
+            .await
+            .context("reading from task directory")?;
         while let Ok(Some(dir_entry)) = taskfiles.next_entry().await {
             tasks.push(Task::get_from_save(&dir_entry.path().to_string_lossy().to_string()).await?);
         }
@@ -49,10 +68,7 @@ impl Instance {
         // Sorting by `litera`
         tasks.sort_by(|a, b| a.info.litera.cmp(&b.info.litera));
 
-        Ok( Self {
-            contest,
-            tasks
-        } )
+        Ok(Self { contest, tasks })
     }
 
     pub fn from_api_json(value: Value) -> anyhow::Result<Self> {
@@ -62,43 +78,49 @@ impl Instance {
 
 async fn read_to_json(file: &mut File) -> Result<serde_json::Value> {
     let mut text = String::new();
-    let len = file.read_to_string(&mut text).await.context("while read_to_json file")?;
+    let len = file
+        .read_to_string(&mut text)
+        .await
+        .context("while read_to_json file")?;
     log::trace!("File was readed with len {len}:\n{text}");
-    let json: serde_json::Value = serde_json::from_str(&text).context("while parsing file to json")?;
+    let json: serde_json::Value =
+        serde_json::from_str(&text).context("while parsing file to json")?;
     Ok(json)
 }
 
 pub async fn get_contest_id(mut instance_path: String) -> Result<String> {
     instance_path.push_str("/contest.json");
-    let mut contest_file = File::open(&instance_path).await.context("while reading contest file")?;
+    let mut contest_file = File::open(&instance_path)
+        .await
+        .context("while reading contest file")?;
     let json = read_to_json(&mut contest_file).await?;
-    
 
-    let contest: Contest = serde_json::from_value(json).context("while parsing Contest from json")?;
+    let contest: Contest =
+        serde_json::from_value(json).context("while parsing Contest from json")?;
     Ok(contest.id)
 }
 
 #[tokio::test]
 pub async fn instance_save_to_and_read_from() {
     let mut st = std::collections::HashMap::new();
-    st.insert("eo.md".to_string(), "Statements\nin file eo.md".to_string());
+    st.insert("eo.md".into(), "Statements\nin file eo.md".into());
     let mut st2 = std::collections::HashMap::new();
-    st2.insert("eo.md".to_string(), "Statements of second task\nin file eo.md".to_string());
+    st2.insert(
+        "eo.md".into(),
+        "Statements of second task\nin file eo.md".into(),
+    );
     let instance = Instance {
         contest: Contest {
             id: "test_contest".to_string(),
-            tasks: vec![
-                "A".to_string(),
-                "B".to_string(),
-            ],
+            tasks: vec!["A".to_string(), "B".to_string()],
         },
         tasks: vec![
             Task {
                 info: task::Info {
                     time_limit: 1.0,
                     memory_limit: 256000,
-                    litera: "A".to_string(),
-                    name: "Sum of two number".to_string(),
+                    litera: "A".into(),
+                    name: "Sum of two number".into(),
                 },
                 samples: vec![
                     test::Test {
@@ -118,8 +140,8 @@ pub async fn instance_save_to_and_read_from() {
                 info: task::Info {
                     time_limit: 1.0,
                     memory_limit: 256000,
-                    litera: "B".to_string(),
-                    name: "Diff btw two number".to_string(),
+                    litera: "B".into(),
+                    name: "Diff btw two number".into(),
                 },
                 samples: vec![
                     test::Test {
@@ -137,17 +159,17 @@ pub async fn instance_save_to_and_read_from() {
             },
         ],
     };
-    let res = instance.clone().save_to(&".tost".to_string()).await;
+    let res = instance.clone().save_to(".tost").await;
     if let Err(err) = res {
         panic!("Error of saving: {err:?}");
     };
-    let loaded = Instance::get_from_dir(&".tost".to_string()).await;
+    let loaded = Instance::get_from_dir(".tost").await;
     match loaded {
         Err(err) => {
             panic!("Error of get_from_dir: {err:?}");
-        },
+        }
         Ok(r) => {
             assert_eq!(instance, r);
-        },
+        }
     }
 }
