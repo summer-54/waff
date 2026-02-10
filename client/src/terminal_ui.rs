@@ -1,7 +1,8 @@
-use crossterm::event::{self, Event, KeyCode, KeyModifiers};
-use ratatui::{text::{Line, Text}, widgets::{Block, Borders, List}, Frame};
+use crossterm::event::{self, KeyCode, KeyModifiers};
+use ratatui::{Frame, text::{Line, Text}, widgets::{Block, Borders, List}};
+use anyhow::{Result, Context, anyhow};
 
-use crate::{Instance, defaults::INSTANCE_FOLDER};
+use lib::{instance::Instance, defaults::INSTANCE_FOLDER};
 
 fn draw(frame: &mut Frame, instance: &Instance) {
     todo!();
@@ -17,18 +18,21 @@ fn draw(frame: &mut Frame, instance: &Instance) {
     frame.render_widget(list, block_inner);
 }
 
-pub async fn start() -> Result<String, String> {
-    let instance = Instance::get_from_dir(&INSTANCE_FOLDER.to_string()).await?;
-    let mut terminal = ratatui::init();
-    let result = loop {
+async fn app(mut terminal: ratatui::DefaultTerminal) -> Result<Box<str>> {
+    let instance = Instance::get_from_dir(&INSTANCE_FOLDER.to_string()).await.context("while loading Instance from folder")?;
+    loop {
         if let Err(err) = terminal.draw(|frame| draw(frame, &instance)) {
-            break Err(format!("Failed to draw a frame: {err}"));
+            return Err(anyhow!("Failed to draw a frame: {err}"));
         }
         if event::read().is_ok_and(|event| event.as_key_event().is_some_and(|key_event| key_event.is_press() && key_event.modifiers.contains(KeyModifiers::CONTROL) && matches!(key_event.code, KeyCode::Char('q')))) {
-            break Ok(format!("Tui succesfuly closed by pressing on [ -q- ]."));
+            return Ok(format!("Tui succesfuly closed by pressing on [ -q- ].").into());
         }
     };
+}
 
+pub async fn start() -> Result<Box<str>> {
+    let terminal = ratatui::init();
+    let result = app(terminal).await;
     ratatui::restore();
-    return result;
+    return result.context("while working tui");
 }

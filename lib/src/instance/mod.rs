@@ -88,8 +88,8 @@ async fn read_to_json(file: &mut File) -> Result<serde_json::Value> {
     Ok(json)
 }
 
-pub async fn get_contest_id(mut instance_path: String) -> Result<String> {
-    instance_path.push_str("/contest.json");
+pub async fn get_contest_id(instance_path: &str) -> Result<Box<str>> {
+    let instance_path = format!("{instance_path}/contest.json");
     let mut contest_file = File::open(&instance_path)
         .await
         .context("while reading contest file")?;
@@ -111,8 +111,8 @@ pub async fn instance_save_to_and_read_from() {
     );
     let instance = Instance {
         contest: Contest {
-            id: "test_contest".to_string(),
-            tasks: vec!["A".to_string(), "B".to_string()],
+            id: "test_contest".into(),
+            tasks: vec!["A".into(), "B".into()],
         },
         tasks: vec![
             Task {
@@ -125,13 +125,13 @@ pub async fn instance_save_to_and_read_from() {
                 samples: vec![
                     test::Test {
                         number: 1,
-                        input: "2 2".to_string(),
-                        output: Some("4".to_string()),
+                        input: "2 2".into(),
+                        output: Some("4".into()),
                     },
                     test::Test {
                         number: 2,
-                        input: "2 3".to_string(),
-                        output: Some("5".to_string()),
+                        input: "2 3".into(),
+                        output: Some("5".into()),
                     },
                 ],
                 statements: st,
@@ -146,13 +146,13 @@ pub async fn instance_save_to_and_read_from() {
                 samples: vec![
                     test::Test {
                         number: 1,
-                        input: "2 2".to_string(),
-                        output: Some("0".to_string()),
+                        input: "2 2".into(),
+                        output: Some("0".into()),
                     },
                     test::Test {
                         number: 2,
-                        input: "2 3".to_string(),
-                        output: Some("1".to_string()),
+                        input: "2 3".into(),
+                        output: Some("1".into()),
                     },
                 ],
                 statements: st2,

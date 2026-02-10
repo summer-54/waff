@@ -461,7 +461,9 @@ dependencies = [
  "crossterm",
  "futures",
  "lib",
+ "log",
  "ratatui",
+ "serde_json",
  "tokio",
 ]
 

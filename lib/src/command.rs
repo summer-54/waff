@@ -3,11 +3,11 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 pub enum Command {
     GetInstance {
-        contest: String,
+        contest: Box<str>,
     },
     Submit {
-        contest: String,
-        task: String,
-        code: String,
+        contest: Box<str>,
+        task: Box<str>,
+        code: Box<str>,
     }
 }

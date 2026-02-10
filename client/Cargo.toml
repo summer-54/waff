@@ -10,5 +10,7 @@ clap = "*"
 tokio = "*"
 anyhow = "*"
 futures = "*"
+log = "*"
 lib = { path = "../lib" }
+serde_json = "*"
 

@@ -8,8 +8,8 @@ use tokio::{
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct Test {
     pub number: u32,
-    pub input: String,
-    pub output: Option<String>,
+    pub input: Box<str>,
+    pub output: Option<Box<str>>,
 }
 
 impl Test {
@@ -48,15 +48,15 @@ impl Test {
                     .read_to_string(&mut output)
                     .await
                     .context("while reading output file")?;
-                Some(output)
+                Some(output.into())
             } else {
                 None
             }
         };
         Ok(Self {
             number,
-            input,
-            output,
+            input: input.into(),
+            output: output,
         })
     }
 }
