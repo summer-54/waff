@@ -28,7 +28,7 @@
 
 ```
 {
-    id: "<contest_id>",
+    id: "<contest_id>", // "{group_id}:{contest_id}" | "{contest_id}" -> group_id = -1
     tasks: [..., "<Litera>",...],
 }
 ```

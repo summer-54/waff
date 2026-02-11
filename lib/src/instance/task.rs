@@ -1,6 +1,6 @@
-use std::collections::HashMap;
+use std::{collections::HashMap};
 
-use crate::defaults;
+use crate::{defaults, ts_api};
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use tokio::{
@@ -13,9 +13,10 @@ use super::test::Test;
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct Info {
     pub name: Box<str>,
+    pub id: i32,
     pub litera: Box<str>,
     pub time_limit: f32,
-    pub memory_limit: u64,
+    pub memory_limit: i32,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -144,5 +145,31 @@ impl Task {
             samples,
             statements,
         })
+    }
+
+    pub fn from_api(index: u32, task: ts_api::Task) -> Self {
+        let A = 0x41;
+        let litera = match index {
+            i if i < 26 => {
+                String::from(char::from_u32(A + i).unwrap_or('?'))
+            },
+            i if i >= 26 => {
+                (i - 25).to_string()
+            },
+            _ => String::from('?').into(),
+        }.into();
+        Self {
+            info: Info {
+                litera,
+                id: task.id,
+                memory_limit: task.ml,
+                time_limit: task.tl as f32 / 1000.0,
+                name: task.name,
+            },
+            samples: vec![
+
+            ],
+            statements: HashMap::new(),
+        }
     }
 }

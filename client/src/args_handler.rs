@@ -1,11 +1,15 @@
 use std::path::Path;
 
+use lib::instance::Instance;
+use lib::ts_api::ContestWithTasks;
 use tokio::fs::File;
+use tokio::io::AsyncReadExt;
 
 use crate::checker;
 use anyhow::{Context, Result};
 use crate::terminal_ui;
 use crate::daemon_client;
+use lib::command::Command as ApiCommand
 use lib::{
     instance,
     formatter,
@@ -42,12 +46,21 @@ pub enum Command {
 pub async fn handle(args: CLArgs) -> Result<Box<str>> {
     match args.command {
         Command::New { contest } => {
-            daemon_client::download_instance(&contest).await?.save_to(&INSTANCE_FOLDER.to_string()).await?;
+            Instance::from_api(serde_json::from_str(
+                daemon_client::send_command(ApiCommand::GetInstance {
+                    contest,
+                }).await?
+            )).save_to(INSTANCE_FOLDER);
             Ok(format!("Succesfuly got and saved instance").into())
         },
         Command::Submit { task, path } => {
             let mut file = File::open(path.clone()).await.context("can't open submitted file")?;
-            daemon_client::submit(&instance::get_contest_id(INSTANCE_FOLDER.into()).await?, &task, &mut file).await.context("while submitting solution")
+            let mut code = String::new();
+            let contest_id = instance::get_contest_id(INSTANCE_FOLDER).await?;
+            file.read_to_string(&mut code).await.context("while reading solution file")?;
+            daemon_client::send_command(ApiCommand::Submit {
+                code: code.into(), task, contest: contest_id,
+            }).await?;
         },
         Command::Tui => {
             terminal_ui::start().await

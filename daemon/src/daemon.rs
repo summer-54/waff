@@ -1,16 +1,16 @@
 use tokio::{io::AsyncReadExt, net::UnixListener};
-use lib::command::Command;
+use lib::{command::Command, token::Token};
 use crate::prelude::*;
 use api_request::{get_token, get_contest};
 
 
-async fn execute_command(command: &Command, token: &str) -> Result<Box<str>> {
+async fn execute_command(command: &Command, token: &Token) -> Result<Box<str>> {
     match command {
         Command::Submit { contest, task, code } => {
 
         },
         Command::GetInstance { contest } => {
-            get_contest(contest);
+            get_contest(token, contest);
         }
     }
     todo!();
@@ -20,7 +20,7 @@ pub async fn start(token: Option<Box<str>>, name: Option<Box<str>>, password: Op
     let listener = UnixListener::bind(UNIX_SOCKET_PATH).context("while binding Unix Socket")?;
 
     let token = match token {
-        Some(token) => token,
+        Some(token) => Token(token),
         None => {
             let (Some(name), Some(password)) = (name, password) else {
                 return Err(anyhow!("Can't start waff_daemon without specified token or name and password"));

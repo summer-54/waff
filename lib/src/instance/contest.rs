@@ -1,3 +1,4 @@
+use crate::contest_id::ContestId;
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use tokio::{
@@ -5,9 +6,9 @@ use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
 };
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Contest {
-    pub id: Box<str>,
+    pub id: ContestId,
     pub tasks: Vec<Box<str>>,
 }
 

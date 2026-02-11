@@ -3,7 +3,6 @@ use instance::Instance;
 use token::Token;
 use surf;
 use crate::prelude::*;
-use surf::http::Error;
 
 pub async fn get_token(name: &str, password: &str) -> anyhow::Result<Token> {
     todo!();
@@ -24,6 +23,6 @@ pub async fn get_contest(token: &Token, contest_id: &ContestId) -> anyhow::Resul
         .body_string().await.map_err(|e| anyhow!("{e}"))?;
 
     let contest: ts_api::ContestWithTasks = serde_json::from_str(&res)?;
-    let instance = Instance::from_api(contest)?;
+    let instance = Instance::from_api(contest);
     Ok(instance)
 }

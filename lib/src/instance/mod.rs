@@ -5,10 +5,9 @@ pub mod test;
 pub mod test_verdict;
 pub mod verdict;
 
-use crate::defaults;
+use crate::{defaults, ts_api, contest_id::ContestId};
 use anyhow::{Context, Result};
 use contest::Contest;
-use serde_json::Value;
 use task::Task;
 use test_verdict::TestVerdict;
 use tokio::{
@@ -17,7 +16,7 @@ use tokio::{
 };
 use verdict::Verdict;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Clone)]
 pub struct Instance {
     contest: Contest,
     tasks: Vec<Task>,
@@ -71,8 +70,17 @@ impl Instance {
         Ok(Self { contest, tasks })
     }
 
-    pub fn from_api_json(value: Value) -> anyhow::Result<Self> {
-        todo!()
+    pub fn from_api(contest: ts_api::ContestWithTasks) -> Self {
+        let tasks: Vec<Task> = contest.tasks.to_vec().into_iter().enumerate().map(|(index, task_api)| Task::from_api(index as u32, task_api)).collect();
+        Self {
+            contest: Contest {
+                id: contest.id,
+                tasks: tasks.iter()
+                    .map(|task| task.info.litera.clone())
+                    .collect(),
+            },
+            tasks,
+        }
     }
 }
 
@@ -88,7 +96,7 @@ async fn read_to_json(file: &mut File) -> Result<serde_json::Value> {
     Ok(json)
 }
 
-pub async fn get_contest_id(instance_path: &str) -> Result<Box<str>> {
+pub async fn get_contest_id(instance_path: &str) -> Result<ContestId> {
     let instance_path = format!("{instance_path}/contest.json");
     let mut contest_file = File::open(&instance_path)
         .await
@@ -111,12 +119,16 @@ pub async fn instance_save_to_and_read_from() {
     );
     let instance = Instance {
         contest: Contest {
-            id: "test_contest".into(),
+            id: ContestId {
+                group: -1,
+                contest: 54,
+            },
             tasks: vec!["A".into(), "B".into()],
         },
         tasks: vec![
             Task {
                 info: task::Info {
+                    id: 7,
                     time_limit: 1.0,
                     memory_limit: 256000,
                     litera: "A".into(),
@@ -138,6 +150,7 @@ pub async fn instance_save_to_and_read_from() {
             },
             Task {
                 info: task::Info {
+                    id: 171,
                     time_limit: 1.0,
                     memory_limit: 256000,
                     litera: "B".into(),

@@ -1,12 +1,14 @@
 use serde::{Deserialize, Serialize};
 
+use crate::contest_id::ContestId;
+
 #[derive(Serialize, Deserialize)]
 pub enum Command {
     GetInstance {
-        contest: Box<str>,
+        contest: ContestId,
     },
     Submit {
-        contest: Box<str>,
+        contest: ContestId,
         task: Box<str>,
         code: Box<str>,
     }
