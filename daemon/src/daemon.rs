@@ -1,15 +1,8 @@
 use tokio::{io::AsyncReadExt, net::UnixListener};
-use lib::{command::Command, defaults::{API_URL, UNIX_SOCKET_PATH}};
-use surf;
-use anyhow::{Result, Context, anyhow};
+use lib::command::Command;
+use crate::prelude::*;
+use api_request::{get_token, get_contest};
 
-async fn get_token(name: &str, password: &str) -> Result<Box<str>> {
-    let _res = surf::get(format!("{API_URL}"))
-        .header("name", name)
-        .header("password", password)
-        .send().await;
-    todo!();
-}
 
 async fn execute_command(command: &Command, token: &str) -> Result<Box<str>> {
     match command {
@@ -17,7 +10,7 @@ async fn execute_command(command: &Command, token: &str) -> Result<Box<str>> {
 
         },
         Command::GetInstance { contest } => {
-
+            get_contest(contest);
         }
     }
     todo!();
