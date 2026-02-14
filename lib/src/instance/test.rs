@@ -5,7 +5,7 @@ use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
 };
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Test {
     pub number: u32,
     pub input: Box<str>,

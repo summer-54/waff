@@ -15,10 +15,8 @@ pub async fn get_token(name: &str, password: &str) -> anyhow::Result<Token> {
 
 pub async fn get_contest(token: &Token, contest_id: &ContestId) -> anyhow::Result<Instance> {
     let ContestId {group, contest} = contest_id; 
-    let res = surf::get(format!("{API_URL}/get_contest_info"))
+    let res = surf::get(format!("{API_URL}/get_contest_info?contestId={contest}&groupId={group}"))
         .header("Authorization", &**token)
-        .header("contest", contest.to_string())
-        .header("group", group.to_string())
         .send().await.map_err(|e| anyhow!("{e}"))?
         .body_string().await.map_err(|e| anyhow!("{e}"))?;
 

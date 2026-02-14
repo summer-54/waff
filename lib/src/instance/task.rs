@@ -10,7 +10,7 @@ use tokio::{
 
 use super::test::Test;
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Info {
     pub name: Box<str>,
     pub id: i32,
@@ -19,7 +19,7 @@ pub struct Info {
     pub memory_limit: i32,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Clone)]
 pub struct Task {
     pub info: Info,
     pub statements: HashMap<Box<str>, Box<str>>,
