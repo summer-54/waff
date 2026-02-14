@@ -9,6 +9,7 @@ path = "src/lib.rs"
 
 [dependencies]
 futures = "*"
+env_logger = "*"
 uuid = "*"
 clap = { version = "*", features = ["derive"] }
 tokio = { version = "*", features = ["full"] }

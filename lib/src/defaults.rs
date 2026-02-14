@@ -1,6 +1,6 @@
 pub const UNIX_SOCKET_PATH: &str = "/tmp/waff_daemon";
 pub const INSTANCE_FOLDER: &str = ".waff";
-pub const API_URL: &str = "https://inf54.ru/api";
+pub const API_URL: &str = "https://contest.inf54.ru/api";
 
 pub fn tasks_path(instance_path: &str) -> Box<str> {
     format!("{instance_path}/tasks").into()

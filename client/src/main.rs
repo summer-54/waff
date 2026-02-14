@@ -9,9 +9,10 @@ use tokio;
 
 #[tokio::main]
 async fn main() {
+    env_logger::init();
     let args = CLArgs::parse();
     match args_handler::handle(args).await {
         Ok(res) => println!("{res}"),
-        Err(err) => println!("Error: {err}"),
+        Err(err) => println!("Error: {err:?}"),
     }
 }

@@ -1,5 +1,6 @@
 use std::path::Path;
 
+use lib::contest_id::ContestId;
 use lib::instance::Instance;
 use lib::ts_api::ContestWithTasks;
 use tokio::fs::File;
@@ -9,7 +10,7 @@ use crate::checker;
 use anyhow::{Context, Result};
 use crate::terminal_ui;
 use crate::daemon_client;
-use lib::command::Command as ApiCommand
+use lib::command::Command as ApiCommand;
 use lib::{
     instance,
     formatter,
@@ -46,11 +47,19 @@ pub enum Command {
 pub async fn handle(args: CLArgs) -> Result<Box<str>> {
     match args.command {
         Command::New { contest } => {
-            Instance::from_api(serde_json::from_str(
-                daemon_client::send_command(ApiCommand::GetInstance {
-                    contest,
-                }).await?
-            )).save_to(INSTANCE_FOLDER);
+            let (contest, group) = contest.split_once(':').unwrap_or(("-1", &*contest));
+            let contest_id = ContestId {
+                contest: contest.parse()?,
+                group: group.parse()?,
+            };
+            let contest_with_tasks: ContestWithTasks = serde_json::from_str(
+                    &*daemon_client::send_command(ApiCommand::GetInstance {
+                        contest: contest_id,
+                    }).await?
+                )?;
+            Instance::from_api(
+                contest_with_tasks
+            )?.save_to(INSTANCE_FOLDER).await?;
             Ok(format!("Succesfuly got and saved instance").into())
         },
         Command::Submit { task, path } => {
@@ -61,6 +70,7 @@ pub async fn handle(args: CLArgs) -> Result<Box<str>> {
             daemon_client::send_command(ApiCommand::Submit {
                 code: code.into(), task, contest: contest_id,
             }).await?;
+            Ok(format!("Succesfuly submitted solution").into())
         },
         Command::Tui => {
             terminal_ui::start().await

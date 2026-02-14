@@ -4,13 +4,8 @@ use token::Token;
 use surf;
 use crate::prelude::*;
 
-pub async fn get_token(name: &str, password: &str) -> anyhow::Result<Token> {
-    todo!();
-    let res = surf::get(format!("{API_URL}"))
-        .header("name", name)
-        .header("password", password)
-        .send().await.map_err(|e| anyhow!("{e}"))?
-        .body_string().await.map_err(|e| anyhow!("{e}"))?;
+pub async fn get_token(_name: &str, _password: &str) -> anyhow::Result<Token> {
+    Err(anyhow!("get token isn't supported now"))
 }
 
 pub async fn get_contest(token: &Token, contest_id: &ContestId) -> anyhow::Result<Instance> {
@@ -20,7 +15,8 @@ pub async fn get_contest(token: &Token, contest_id: &ContestId) -> anyhow::Resul
         .send().await.map_err(|e| anyhow!("{e}"))?
         .body_string().await.map_err(|e| anyhow!("{e}"))?;
 
-    let contest: ts_api::ContestWithTasks = serde_json::from_str(&res)?;
-    let instance = Instance::from_api(contest);
+    let mut contest: ts_api::ContestWithTasks = serde_json::from_str(&res)?;
+    contest.group_id = Some(contest_id.group);
+    let instance = Instance::from_api(contest)?;
     Ok(instance)
 }

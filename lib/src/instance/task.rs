@@ -30,7 +30,7 @@ impl Task {
     pub async fn save_to(&self, path: &str) -> Result<()> {
         let dir_builder = DirBuilder::new();
         dir_builder
-            .create(path.clone())
+            .create(path)
             .await
             .context("while creating Task folder")?;
 
@@ -148,10 +148,10 @@ impl Task {
     }
 
     pub fn from_api(index: u32, task: ts_api::Task) -> Self {
-        let A = 0x41;
+        let a = 0x41;
         let litera = match index {
             i if i < 26 => {
-                String::from(char::from_u32(A + i).unwrap_or('?'))
+                String::from(char::from_u32(a + i).unwrap_or('?'))
             },
             i if i >= 26 => {
                 (i - 25).to_string()

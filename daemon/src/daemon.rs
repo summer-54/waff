@@ -1,4 +1,4 @@
-use tokio::{io::AsyncReadExt, net::UnixListener};
+use tokio::{fs::remove_file, io::AsyncReadExt, net::UnixListener};
 use lib::{command::Command, token::Token};
 use crate::prelude::*;
 use api_request::{get_token, get_contest};
@@ -10,13 +10,14 @@ async fn execute_command(command: &Command, token: &Token) -> Result<Box<str>> {
 
         },
         Command::GetInstance { contest } => {
-            get_contest(token, contest);
+            get_contest(token, contest).await?;
         }
     }
     todo!();
 }
 
 pub async fn start(token: Option<Box<str>>, name: Option<Box<str>>, password: Option<Box<str>>) -> Result<Box<str>> {
+    let _ = remove_file(UNIX_SOCKET_PATH).await;
     let listener = UnixListener::bind(UNIX_SOCKET_PATH).context("while binding Unix Socket")?;
 
     let token = match token {
@@ -36,6 +37,9 @@ pub async fn start(token: Option<Box<str>>, name: Option<Box<str>>, password: Op
         loop {
             let mut command_string = String::new();
             let len = stream.read_to_string(&mut command_string).await.context("while trying to read UnixStream")?;
+            if len == 0 {
+                continue;
+            }
             log::trace!("Readed message {command_string} with len {len}");
             let command: Command = serde_json::from_str(&command_string).context("while parsing command")?;
             match execute_command(&command, &token).await {

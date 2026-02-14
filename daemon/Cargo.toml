@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 tokio = { version = "*", features = ["full"] }
+env_logger = "*"
 serde_json = "*"
 surf = "*"
 anyhow = "*"

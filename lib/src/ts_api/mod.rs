@@ -31,6 +31,9 @@ pub struct Task {
 pub struct ContestWithTasks {
     #[serde(rename = "id")]
     pub id:           i32,
+    /// Never serializes from api, need to be specified
+    #[serde(skip)]
+    pub group_id:     Option<i32>,
     #[serde(rename = "name")]
 	pub name:         Box<str>,
     #[serde(rename = "dateFrom")]
