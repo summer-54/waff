@@ -102,7 +102,7 @@ async fn read_to_json(file: &mut File) -> Result<serde_json::Value> {
 }
 
 pub async fn get_contest_id(instance_path: &str) -> Result<ContestId> {
-    let instance_path = format!("{instance_path}/contest.json");
+    let instance_path: &str = &defaults::contest_path(instance_path);
     let mut contest_file = File::open(&instance_path)
         .await
         .context("while reading contest file")?;
@@ -111,6 +111,11 @@ pub async fn get_contest_id(instance_path: &str) -> Result<ContestId> {
     let contest: Contest =
         serde_json::from_value(json).context("while parsing Contest from json")?;
     Ok(contest.id)
+}
+
+pub async fn get_task_id_by_litera(instance_path: &str, litera: &str) -> Result<i32> {
+    let task = Task::get_from_save(&*defaults::task_path(&defaults::tasks_path(instance_path), litera)).await?;
+    Ok(task.info.id)
 }
 
 #[tokio::test]

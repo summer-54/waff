@@ -2,6 +2,7 @@ use std::path::Path;
 
 use lib::contest_id::ContestId;
 use lib::instance::Instance;
+use lib::language::Language;
 use lib::ts_api::ContestWithTasks;
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
@@ -25,19 +26,21 @@ pub struct CLArgs {
 #[derive(clap::Subcommand)]
 pub enum Command {
     New {
-        #[arg(short, long)]
+        // #[arg(short, long)]
         contest: Box<str>,
     },
     Submit {
-        //#[arg(short, long)]
+        // #[arg(short, long)]
         task: Box<str>,
-        //#[arg(short, long)]
+        // #[arg(short, long)]
         path: Box<Path>,
+        #[arg(default_value="cpp")]
+        language: Language,
     },
     Check {
-        #[arg(short, long)]
+        // #[arg(short, long)]
         task: Box<str>,
-        #[arg(short, long)]
+        // #[arg(short, long)]
         path: Box<Path>,
     },
     Tui,
@@ -60,15 +63,16 @@ pub async fn handle(args: CLArgs) -> Result<Box<str>> {
             instance.save_to(INSTANCE_FOLDER).await?;
             Ok(format!("Succesfuly got and saved instance").into())
         },
-        Command::Submit { task, path } => {
-            let mut file = File::open(path.clone()).await.context("can't open submitted file")?;
+        Command::Submit { task, path, language } => {
+            let mut file = File::open(path.clone()).await.context("Can't open submitted file")?;
             let mut code = String::new();
             let contest_id = instance::get_contest_id(INSTANCE_FOLDER).await?;
-            file.read_to_string(&mut code).await.context("while reading solution file")?;
-            daemon_client::send_command(ApiCommand::Submit {
-                code: code.into(), task, contest: contest_id,
+            let task_id = instance::get_task_id_by_litera(INSTANCE_FOLDER, &task).await?;
+            file.read_to_string(&mut code).await.context("While reading solution file")?;
+            let res = daemon_client::send_command(ApiCommand::Submit {
+                code: code.into(), task_id, contest_id, language,
             }).await?;
-            Ok(format!("Succesfuly submitted solution").into())
+            Ok(format!("Succesfuly submitted solution {}", res).into())
         },
         Command::Tui => {
             terminal_ui::start().await

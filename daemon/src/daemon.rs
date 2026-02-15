@@ -1,13 +1,13 @@
 use tokio::{fs::remove_file, io::{AsyncReadExt, AsyncWriteExt}, net::UnixListener};
 use lib::{command::Command, token::Token};
 use crate::prelude::*;
-use api_request::{get_token, get_contest};
+use api_request::{get_token, get_contest, submit};
 
 
 async fn execute_command(command: &Command, token: &Token) -> Result<Box<str>> {
     match command {
-        Command::Submit { contest, task, code } => {
-            todo!();
+        Command::Submit { contest_id, task_id, code, language } => {
+            Ok(serde_json::to_string(&submit(token, contest_id, *task_id, code, language).await?)?.into())
         },
         Command::GetInstance { contest } => {
             Ok(serde_json::to_string(&get_contest(token, contest).await?)?.into())

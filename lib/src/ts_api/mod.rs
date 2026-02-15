@@ -54,3 +54,18 @@ pub struct ContestWithTasks {
     pub tasks:        Box<[Task]>,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
+pub struct Submission {
+    #[serde(rename = "time")]
+    pub time:        i64,
+    #[serde(rename = "sourceCode")]
+    pub source_code: Box<str>,
+    #[serde(rename = "language")]
+	pub language:    Box<str>,
+    #[serde(rename = "taskId")]
+	pub task_id:     i32,
+    #[serde(rename = "contestId")]
+	pub contest_id:  i32,
+    #[serde(rename = "groupId")]
+	pub group_id:    i32,
+}

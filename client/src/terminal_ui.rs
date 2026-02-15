@@ -5,7 +5,6 @@ use anyhow::{Result, Context, anyhow};
 use lib::{instance::Instance, defaults::INSTANCE_FOLDER};
 
 fn draw(frame: &mut Frame, instance: &Instance) {
-    todo!();
     let text = Text::raw("Hollow");
     let lines = [Line::raw("A"), Line::raw("B")];
     let list = List::new(lines);
@@ -34,5 +33,5 @@ pub async fn start() -> Result<Box<str>> {
     let terminal = ratatui::init();
     let result = app(terminal).await;
     ratatui::restore();
-    return result.context("while working tui");
+    result.context("while working tui")
 }
