@@ -3,8 +3,8 @@
 ## Instance tree
 
 ```
-|_ .
-|_ .tost/
+_./
+|_ .waff/
 '|_ contest.json
  |_ tasks/
  '|_ A/
@@ -27,8 +27,11 @@
 
 ```
 {
-    id: "<contest_id>", /* "{group_id}:{contest_id}" | "{contest_id}" -> group_id = -1
-    tasks: [..., "<Litera>",...],
+    "id": {
+        "contest": <contest-id : i32>,
+        "group": <group-id : i32>
+    }
+    "tasks": [..., "<Litera>",...],
 }
 ```
 
@@ -36,10 +39,11 @@
 
 ```
 {
-    name: "<task name : str>",
-    litera: "<task Litera : str>",
-    time_limit: <time limit : f32 [sec]>,
-    memory_limit: <memory limit : u64 [byte]>,
+    "name": "<task name : str>",
+    "id": "<task id : i32>",
+    "litera": "<task Litera : str>",
+    "time_limit": <time limit : f32 [sec]>,
+    "memory_limit": <memory limit : u64 [MB]>,
 }
 ```
 ## waff_daemon
