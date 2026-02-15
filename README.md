@@ -25,16 +25,16 @@
 
 ### .tost/contest.json
 
-``` json
+```
 {
-    id: "<contest_id>", // "{group_id}:{contest_id}" | "{contest_id}" -> group_id = -1
+    id: "<contest_id>", /* "{group_id}:{contest_id}" | "{contest_id}" -> group_id = -1
     tasks: [..., "<Litera>",...],
 }
 ```
 
 ### .tost/tasks/{litera}/info.json
 
-``` json
+```
 {
     name: "<task name : str>",
     litera: "<task Litera : str>",
@@ -51,7 +51,7 @@ TOKEN='<token>' ./client
 >[!IMPORTANT]
 > Use only single quotes `'`, to prevent replacing `$smth` substrings in token with enviroment variables.
 
->[!HINT] 
+>[!TIP]
 > You can use `-z` to start background process
 
 ## waff
