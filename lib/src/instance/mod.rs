@@ -8,6 +8,7 @@ pub mod verdict;
 use crate::{defaults, ts_api, contest_id::ContestId};
 use anyhow::{Context, Result, anyhow};
 use contest::Contest;
+use serde::{Deserialize, Serialize};
 use task::Task;
 use test_verdict::TestVerdict;
 use tokio::{
@@ -16,7 +17,7 @@ use tokio::{
 };
 use verdict::Verdict;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Instance {
     contest: Contest,
     tasks: Vec<Task>,
@@ -24,9 +25,7 @@ pub struct Instance {
 
 impl Instance {
     pub async fn save_to(self, directory: &str) -> Result<()> {
-        remove_dir_all(directory)
-            .await
-            .context("removing save directory")?;
+        let _ = remove_dir_all(directory).await;
         let dir_builder = DirBuilder::new();
         dir_builder
             .create(directory)

@@ -19,7 +19,7 @@ pub struct Info {
     pub memory_limit: i32,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Task {
     pub info: Info,
     pub statements: HashMap<Box<str>, Box<str>>,
@@ -158,6 +158,17 @@ impl Task {
             },
             _ => String::from('?').into(),
         }.into();
+        let mut statements = HashMap::new();
+        statements.insert("ru.md".into(), task.statement.clone());
+        let inputs_outputs: Vec<&str> = task.samples.split('|').collect();
+        let mut samples = Vec::new();
+        for i in 0..inputs_outputs.len() / 2 {
+            samples.push(Test {
+                number: (i + 1) as u32,
+                input: inputs_outputs[i * 2].into(),
+                output: Some(inputs_outputs[i * 2 + 1].into()),
+            });
+        }
         Self {
             info: Info {
                 litera,
@@ -166,10 +177,8 @@ impl Task {
                 time_limit: task.tl as f32 / 1000.0,
                 name: task.name,
             },
-            samples: vec![
-
-            ],
-            statements: HashMap::new(),
+            samples,
+            statements,
         }
     }
 }

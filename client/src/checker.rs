@@ -20,6 +20,7 @@ pub async fn run_on_input(exec_path: &Path, input: &str) -> Result<Box<str>> {
 
 pub async fn check_on_samples(litera: &str, path: &Path) -> Result<Vec<TestVerdict>> {
     let task = Task::get_from_save(&defaults::default_task_path(&litera)).await.context("Can't get task {litera} from save : {err}")?;
+    log::trace!("Task succesfuly loaded {task:?}");
     let tests_verdicts: Vec<TestVerdict> = join_all(task.samples.iter()
         .map(
             |Test { input, output, .. }| async {
@@ -35,6 +36,7 @@ pub async fn check_on_samples(litera: &str, path: &Path) -> Result<Vec<TestVerdi
                         };
                     }
                 };
+                log::trace!("Task runned on test");
                 if let Some(out) = output.clone() {
                     let out = { 
                         let words: Vec<_> = out.split_whitespace().collect();

@@ -47,19 +47,17 @@ pub enum Command {
 pub async fn handle(args: CLArgs) -> Result<Box<str>> {
     match args.command {
         Command::New { contest } => {
-            let (contest, group) = contest.split_once(':').unwrap_or(("-1", &*contest));
+            let (group, contest) = contest.split_once(':').unwrap_or(("-1", &*contest));
             let contest_id = ContestId {
                 contest: contest.parse()?,
                 group: group.parse()?,
             };
-            let contest_with_tasks: ContestWithTasks = serde_json::from_str(
+            let instance: Instance = serde_json::from_str(
                     &*daemon_client::send_command(ApiCommand::GetInstance {
                         contest: contest_id,
                     }).await?
                 )?;
-            Instance::from_api(
-                contest_with_tasks
-            )?.save_to(INSTANCE_FOLDER).await?;
+            instance.save_to(INSTANCE_FOLDER).await?;
             Ok(format!("Succesfuly got and saved instance").into())
         },
         Command::Submit { task, path } => {

@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::contest_id::ContestId;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub enum Command {
     GetInstance {
         contest: ContestId,

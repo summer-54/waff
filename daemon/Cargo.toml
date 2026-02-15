@@ -7,7 +7,7 @@ edition = "2024"
 tokio = { version = "*", features = ["full"] }
 env_logger = "*"
 serde_json = "*"
-surf = "*"
 anyhow = "*"
 log = "*"
+reqwest = { version = "*", features = ["gzip", "deflate"] }
 lib = { path = "../lib" }
