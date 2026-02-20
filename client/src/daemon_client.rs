@@ -10,3 +10,4 @@ pub async fn send_command(command: lib::command::Command) -> Result<Box<str>> {
     stream.read_to_string(&mut res).await?;
     Ok(res.into())
 }
+

@@ -1,7 +1,7 @@
 use tokio::{fs::remove_file, io::{AsyncReadExt, AsyncWriteExt}, net::UnixListener};
 use lib::{command::Command, token::Token};
 use crate::prelude::*;
-use api_request::{get_token, get_contest, submit};
+use api_request::{get_token, get_contest, submit, get_submission_status};
 
 
 async fn execute_command(command: &Command, token: &Token) -> Result<Box<str>> {
@@ -11,7 +11,10 @@ async fn execute_command(command: &Command, token: &Token) -> Result<Box<str>> {
         },
         Command::GetInstance { contest } => {
             Ok(serde_json::to_string(&get_contest(token, contest).await?)?.into())
-        }
+        },
+        Command::GetSubmissionStatus { submission_id } => {
+            Ok(serde_json::to_string(&get_submission_status(token, *submission_id).await?)?.into())
+        },
     }
 }
 
@@ -40,7 +43,7 @@ pub async fn start(token: Option<Box<str>>, name: Option<Box<str>>, password: Op
         match execute_command(&command, &token).await {
             Ok(res) => {
                 match stream.write_all(res.as_bytes()).await {
-                    Err(err) => log::error!("Err: {err}"),
+                    Err(err) => log::error!(r#"Err: {err}"#),
                     Ok(..) => log::info!("{res}"),
                 };
             },

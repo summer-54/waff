@@ -1,6 +1,6 @@
 use contest_id::ContestId;
 use instance::Instance;
-use lib::language::Language;
+use lib::{instance::submission, language::Language, ts_api::{ContestWithTasks, FullSubmission}};
 use token::Token;
 use crate::prelude::*;
 
@@ -36,5 +36,17 @@ pub async fn submit(token: &Token, contest_id: &ContestId, task_id: i32, code: &
         })?)
         .send().await?;
     
-    Ok(format!("Submission: {}", res.text().await?).into())
+    Ok(format!("{}", res.text().await?).into())
 }
+
+pub async fn get_submission_status(token: &Token, submission_id: i32) -> anyhow::Result<FullSubmission> {
+    let res = reqwest::Client::new()
+        .get(format!("{API_URL}/get_submission?submissionId={submission_id}"))
+        .header("Authorization", &**token)
+        .send().await?
+        .text().await?;
+    log::info!("Submission status got {res:?}.");
+    let submission = serde_json::from_str(&res)?;
+    Ok(submission)
+}
+

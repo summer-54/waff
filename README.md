@@ -49,7 +49,7 @@ _./
 ## waff_daemon
 
 ``` bash
-TOKEN='<token>' ./client
+TOKEN='<token>' ./waff-daemon
 ```
 
 >[!IMPORTANT]

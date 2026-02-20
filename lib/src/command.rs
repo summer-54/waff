@@ -8,6 +8,9 @@ pub enum Command {
     GetInstance {
         contest: ContestId,
     },
+    GetSubmissionStatus {
+        submission_id: i32,
+    },
     Submit {
         language: Language,
         contest_id: ContestId,

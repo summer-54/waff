@@ -1,4 +1,6 @@
 mod checker;
+mod formatter;
+mod mode;
 mod daemon_client;
 mod args_handler;
 mod terminal_ui;

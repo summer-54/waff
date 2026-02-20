@@ -1,6 +1,8 @@
+use serde::{Deserialize, Serialize};
+
 use super::Verdict;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TestVerdict {
     pub verdict: Verdict,
     pub correct_output: Option<Box<str>>,

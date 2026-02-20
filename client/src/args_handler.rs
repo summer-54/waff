@@ -3,18 +3,18 @@ use std::path::Path;
 use lib::contest_id::ContestId;
 use lib::instance::Instance;
 use lib::language::Language;
-use lib::ts_api::ContestWithTasks;
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
 
 use crate::checker;
+use crate::mode::Mode;
 use anyhow::{Context, Result};
 use crate::terminal_ui;
 use crate::daemon_client;
+use crate::formatter;
 use lib::command::Command as ApiCommand;
 use lib::{
     instance,
-    formatter,
     defaults::INSTANCE_FOLDER,
 };
 
@@ -22,6 +22,8 @@ use lib::{
 pub struct CLArgs {
     #[command(subcommand)]
     command: Command,
+    #[arg(long, default_value="normal")]
+    mode: Mode,
 }
 #[derive(clap::Subcommand)]
 pub enum Command {
@@ -37,6 +39,9 @@ pub enum Command {
         #[arg(default_value="cpp")]
         language: Language,
     },
+    Status {
+        submission: Option<i32>,
+    },
     Check {
         // #[arg(short, long)]
         task: Box<str>,
@@ -48,6 +53,7 @@ pub enum Command {
 
 
 pub async fn handle(args: CLArgs) -> Result<Box<str>> {
+    let mode = args.mode;
     match args.command {
         Command::New { contest } => {
             let (group, contest) = contest.split_once(':').unwrap_or(("-1", &*contest));
@@ -61,7 +67,11 @@ pub async fn handle(args: CLArgs) -> Result<Box<str>> {
                     }).await?
                 )?;
             instance.save_to(INSTANCE_FOLDER).await?;
-            Ok(format!("Succesfuly got and saved instance").into())
+            match mode {
+                Mode::Json => Ok(format!(r#"{{}}"#).into()),
+                Mode::None => Ok(format!("Succesfully got and saved instance", ).into()),
+                Mode::Nvim => Ok(format!("Succesfully* saved `insance`.").into()),
+            }
         },
         Command::Submit { task, path, language } => {
             let mut file = File::open(path.clone()).await.context("Can't open submitted file")?;
@@ -72,13 +82,22 @@ pub async fn handle(args: CLArgs) -> Result<Box<str>> {
             let res = daemon_client::send_command(ApiCommand::Submit {
                 code: code.into(), task_id, contest_id, language,
             }).await?;
-            Ok(format!("Succesfuly submitted solution {}", res).into())
+            match mode {
+                Mode::Json => Ok(format!(r#"{{"id"={res}}}"#).into()),
+                Mode::None => Ok(format!("Succesfuly submitted solution #{res}", ).into()),
+                Mode::Nvim => Ok(format!("*submission* `{res}` sended").into()),
+            }
+        },
+        Command::Status { submission: Some(submission_id) } => {
+            Ok(formatter::format_submission_status(serde_json::from_str(&*daemon_client::send_command(ApiCommand::GetSubmissionStatus {
+                submission_id,
+            }).await?)?, mode))
         },
         Command::Tui => {
             terminal_ui::start().await
         },
         Command::Check { task, path } => {
-            Ok(formatter::format_tests_verdicts(checker::check_on_samples(&task, &path).await?))
+            Ok(formatter::format_tests_verdicts(checker::check_on_samples(&task, &path).await?, mode))
         },
         _ => {
             Ok("Unhandled command".into())
