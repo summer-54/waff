@@ -11,8 +11,8 @@ pub enum Language {
 impl Language {
     pub fn to_api_str(&self) -> Box<str> {
         match self {
-            Self::Cpp => "cpp",
-            Self::Py => "py",
+            Self::Cpp => "g++",
+            Self::Py => "python3",
         }.into()
     }
 }

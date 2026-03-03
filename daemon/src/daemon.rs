@@ -7,7 +7,7 @@ use api_request::{get_token, get_contest, submit, get_submission_status};
 async fn execute_command(command: &Command, token: &Token) -> Result<Box<str>> {
     match command {
         Command::Submit { contest_id, task_id, code, language } => {
-            Ok(serde_json::to_string(&submit(token, contest_id, *task_id, code, language).await?)?.into())
+            Ok(submit(token, contest_id, *task_id, code, language).await?)
         },
         Command::GetInstance { contest } => {
             Ok(serde_json::to_string(&get_contest(token, contest).await?)?.into())
